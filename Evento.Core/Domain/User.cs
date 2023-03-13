@@ -16,8 +16,9 @@ namespace Evento.Core.Domain
 
         protected User() { }
 
-        public User(string role, string name, string email, string password)
+        public User(Guid id, string role, string name, string email, string password)
         {
+            Id = id;
             Role = role;
             Name = name;
             Email = email;
