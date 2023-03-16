@@ -13,6 +13,7 @@ namespace Evento.Api
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddSingleton<IJwtHandler, JwtHandler>();
             services.AddSingleton(AutoMapperConfig.Initialize());
 
             return services;
