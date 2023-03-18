@@ -1,9 +1,15 @@
 using Evento.Api;
+using Evento.Api.Framework;
 using Evento.Infrastructure.Services;
 using Evento.Infrastructure.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using NLog;
+using NLog.Web;
 using System.Text;
+
+var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+logger.Debug("init main");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +21,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("App"));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -45,6 +52,9 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddServices();
 
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -53,6 +63,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseErrorHandler();
 
 app.UseHttpsRedirection();
 
@@ -63,3 +75,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+

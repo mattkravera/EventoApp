@@ -1,7 +1,9 @@
 ﻿using Evento.Infrastructure.Commands.Events;
+using Evento.Infrastructure.DTO;
 using Evento.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Evento.Api.Controllers
 {
@@ -9,17 +11,31 @@ namespace Evento.Api.Controllers
     public class EventsController : Controller
     {
         private readonly IEventService _eventService;
+        private readonly IMemoryCache _cache;
 
-        public EventsController(IEventService eventService)
+        public EventsController(IEventService eventService, IMemoryCache cache)
         {
             _eventService = eventService;
+            _cache = cache;
         }
 
         [HttpGet]
-        [Authorize(Policy = "HasAdminRole")]
         public async Task<IActionResult> Get(string name)
         {
-            var events = _eventService.BrowseAsync(name);
+
+            var events = _cache.Get<IEnumerable<EventDto>>("events");
+
+            if (events is null)
+            {
+                Console.WriteLine("Fetching from service");
+                events = await _eventService.BrowseAsync(name);
+                _cache.Set("events", events, TimeSpan.FromMinutes(1));
+            }
+            else
+            {
+                Console.WriteLine("Fetching from cache");
+            }
+
             return Json(events);
         }
 

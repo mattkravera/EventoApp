@@ -3,6 +3,7 @@ using Evento.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using NLog;
 
 namespace Evento.Api.Controllers
 {
@@ -10,6 +11,7 @@ namespace Evento.Api.Controllers
     {
         private readonly IUserService _userService;
         private readonly ITicketService _ticketService;
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         public AccountController(IUserService userService, ITicketService ticketService)
         {
@@ -31,6 +33,7 @@ namespace Evento.Api.Controllers
         public async Task<IActionResult> Post([FromBody]Register command)
         {
             await _userService.RegisterAsync(Guid.NewGuid(), command.Email, command.Name, command.Password, command.Role);
+            Logger.Info("New user registered.");
             return Created("/accounts", null);
         }
 
