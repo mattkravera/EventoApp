@@ -43,7 +43,6 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("admin"));
 });
 
-
 builder.Services.AddServices();
 
 var app = builder.Build();

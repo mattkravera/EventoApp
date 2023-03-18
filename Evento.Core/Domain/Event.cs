@@ -27,10 +27,20 @@ namespace Evento.Core.Domain
             Id = id;
             SetName(name);
             SetDescription(description);
-            StartDate = startDate;
-            EndDate = endDate;
+            SetDates(startDate, endDate);
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
+        }
+        
+        public void SetDates(DateTime startDate, DateTime endDate)
+        {
+            if (startDate >= endDate)
+            {
+                throw new Exception($"Event with id: '{Id}' must have an end date greater than start date");
+            }
+
+            StartDate = startDate;
+            EndDate = endDate;
         }
 
         public void SetName(string name)
@@ -65,5 +75,38 @@ namespace Evento.Core.Domain
                 seating++;
             }
         }
+
+        public void PurchaseTicket(User user, int amount)
+        {
+            if (AvailableTickets.Count() < amount)
+            {
+                throw new Exception($"Not enough available tickets to purchase ({amount}) by user: '{user.Name}'");
+            }
+
+            var tickets = AvailableTickets.Take(amount);
+
+            foreach (var ticket in tickets)
+            {
+                ticket.Purchase(user);
+            }
+        }
+
+        public void CancelPurchasedTickets(User user, int amount)
+        {
+            var tickets = GetTicketsPurchasedByUser(user);
+
+            if (tickets.Count() < amount)
+            {
+                throw new Exception($"Not enough purchased tickets to be canceles ({amount}) by user: '{user.Name}'");
+            }
+
+            foreach (var ticket in tickets)
+            {
+                ticket.Cancel();
+            }
+        }
+
+        public IEnumerable<Ticket> GetTicketsPurchasedByUser(User user)
+            => PurchasedTickets.Where(x => x.UserId == user.Id);
     }
 }

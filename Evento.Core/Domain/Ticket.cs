@@ -13,7 +13,7 @@ namespace Evento.Core.Domain
         public decimal Price { get; protected set; }
         public Guid? UserId { get; protected set; }
         public string Username { get; protected set; }
-        public DateTime PurchasedAt { get; protected set; }
+        public DateTime? PurchasedAt { get; protected set; }
         public bool IsPucrhased => UserId.HasValue;
 
         protected Ticket() { }
@@ -23,6 +23,30 @@ namespace Evento.Core.Domain
             EventId = @event.Id;
             Seating = seating;
             Price = price;
+        }
+
+        public void Purchase(User user)
+        {
+            if (IsPucrhased)
+            {
+                throw new Exception($"Ticket was already purchased by user: '{Username}' at: '{PurchasedAt}'");
+            }
+
+            UserId = user.Id;
+            Username = user.Name;
+            PurchasedAt = DateTime.UtcNow;
+        }
+
+        public void Cancel()
+        {
+            if (!IsPucrhased)
+            {
+                throw new Exception($"Ticket was not purchased and cannot be canceled");
+            }
+
+            UserId = null;
+            Username = null;
+            PurchasedAt = null;
         }
     }
 }
